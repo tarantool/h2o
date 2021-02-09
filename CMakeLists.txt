@@ -46,7 +46,23 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(Threads REQUIRED)
 
-FIND_PACKAGE(OpenSSL)
+IF ((CMAKE_SYSTEM_NAME STREQUAL "Darwin") AND NOT (DEFINED OPENSSL_ROOT_DIR OR DEFINED ENV{OPENSSL_ROOT_DIR}))
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix openssl
+        OUTPUT_VARIABLE OPENSSL_ROOT_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    IF (NOT EXISTS ${OPENSSL_ROOT_DIR})
+        MESSAGE(STATUS "*************************************************************************\n"
+                    "   * Setting OPENSSL_ROOT_DIR to /usr/local. On macOS, OpenSSL should be   *\n"
+                    "   * installed using homebrew or OPENSSL_ROOT_DIR must be set to the path  *\n"
+                    "   * that has OpenSSL installed.                                           *\n"
+                    "   *************************************************************************")
+        SET(OPENSSL_ROOT_DIR "/usr/local")
+    ENDIF ()
+ENDIF ()
+FIND_PACKAGE(OpenSSL REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 
 INCLUDE(CheckCSourceCompiles)
